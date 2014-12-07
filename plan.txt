@@ -1,0 +1,47 @@
+Plan of action:
+
+Structure
+
+setup.py
+telepathy-hangups (executable)
+TelepathyPython (stripped down version of Tp-python)
+TelepathyHangups
+.service
+.manager
+
+TelepathyHangups
+
+ConnectionManager (created by main app)
+Protocol ()
+Auth (wraps a TH auth object)
+Connection (wraps a TH client object ONCE we've done auth, and ConversationList and UserList)
+TextChannel (wraps a TH conversation object)
+
+
+Plan of attack:
+ - keep snippets here
+
+Task 0.1:
+(Tp side)
+ - create a CM that can be seen in KTp
+ - send/receive a hello world
+ - show a hardcoded roster
+
+(Hangups side)
+ - create a client object, log in,
+ - get event for new chat / new message in chat
+
+
+Milestone 0.2:
+ - Using get_auth_stdin + saved cookie file
+ - have 1-1 chats working with name in the chat
+
+Milestone 0.3:
+ - group chat receive
+ - roster, even if using old API as long as it works in KTp
+
+Milestone 0.4:
+ - proper auth
+ - set_presence
+
+*RELEASE*
