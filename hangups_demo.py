@@ -1,6 +1,7 @@
 #!/bin/python
 import hangups
 import asyncio #maybe want to use gobject event loop? depends on python+dbus
+from os.path import expanduser
 
 user_list = None
 client = None
@@ -16,7 +17,7 @@ def _on_connect(initial_data):
         print (user_list._user_dict[x].emails)
 
 
-cookies = hangups.auth.get_auth_stdin("/tmp/foo")
+cookies = hangups.auth.get_auth_stdin(expanduser("~/hangups_auth_tmp"))
 client = hangups.Client(cookies)
 client.on_connect.add_observer(_on_connect)
 
