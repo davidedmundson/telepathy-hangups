@@ -10,6 +10,9 @@ client = None
 
 def _on_connect(initial_data):
     print ("connected")
+    global user_list
+    global conversation_list
+
     user_list = hangups.UserList(
             client, initial_data.self_entity, initial_data.entities,
             initial_data.conversation_participants
@@ -22,19 +25,19 @@ def _on_connect(initial_data):
     conversation_list.on_event.add_observer(on_conversation_list_event)
 
     for x in user_list._user_dict:
-        print (user_list._user_dict[x].full_name)
-        print (user_list._user_dict[x].emails)
+        print ("ROSTER: " + user_list._user_dict[x].full_name)
 
     for conv in conversation_list.get_all():
         print ("active conv", conv.name)
         conv.on_event.add_observer(on_conversation_event)
 
 def on_conversation_list_event(conv_event):
-    if isinstance(conv_event, hangups.ChatMessageEvent):
-        print ("new conversation ")
+    print ("conv_event" + conv_event.id_)
 
 def on_conversation_event(conv_event):
-    print ("conversation event")
+    global user_list
+    if isinstance(conv_event, hangups.ChatMessageEvent):
+        print ("conversation event:" + str(user_list.get_user(conv_event.user_id).full_name) + str(conv_event.text))
 
 cookies = hangups.auth.get_auth_stdin(expanduser("~/hangups_auth_tmp"))
 client = hangups.Client(cookies)
