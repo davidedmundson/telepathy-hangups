@@ -19,17 +19,20 @@ TextChannel (wraps a TH conversation object)
 
 
 Plan of attack:
- - keep snippets here
+ - make two demo apps
+ - merge together
+ - mainloop problem can be solved with https://bitbucket.org/a_ba/gbulb
+ see  also http://stackoverflow.com/questions/26675297/asyncio-calls-running-in-gtk-main-loop
 
 Task 0.1:
 (Tp side)
- - create a CM that can be seen in KTp
+ - create a CM that can be seen in KTp DONE
  - send/receive a hello world
  - show a hardcoded roster
 
 (Hangups side)
- - create a client object, log in,
- - get event for new chat / new message in chat
+ - create a client object, log in,   DONE
+ - get event for new chat / new message in chat    DONE
 
 
 Milestone 0.2:
@@ -40,8 +43,11 @@ Milestone 0.3:
  - group chat receive
  - roster, even if using old API as long as it works in KTp
 
+*BLOG*
+
 Milestone 0.4:
  - proper auth
+ - proper install  + DBus activate
  - set_presence
 
 *RELEASE*
