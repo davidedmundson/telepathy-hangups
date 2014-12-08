@@ -12,11 +12,11 @@ TelepathyHangups
 TelepathyHangups
 
 ConnectionManager (created by main app)
-Protocol ()
+Protocol (static)
 Auth (wraps a TH auth object)
-Connection (wraps a TH client object ONCE we've done auth, and ConversationList and UserList)
+Connection (wraps a TH client object (after we've done the auth) we've done auth UserList)
+ChannelManager ( wraps a ConversationList)
 TextChannel (wraps a TH conversation object)
-
 
 Plan of attack:
  - make two demo apps
