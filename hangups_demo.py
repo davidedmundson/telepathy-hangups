@@ -29,12 +29,12 @@ def _on_connect(initial_data):
         print ("active conv", conv.name)
         conv.on_event.add_observer(on_conversation_event)
 
-def on_conversation_list_event(self, conv_event):
+def on_conversation_list_event(conv_event):
     if isinstance(conv_event, hangups.ChatMessageEvent):
         print ("new conversation ")
 
-def on_conversation_event(self, conv_event):
-    print "conversation event"
+def on_conversation_event(conv_event):
+    print ("conversation event")
 
 cookies = hangups.auth.get_auth_stdin(expanduser("~/hangups_auth_tmp"))
 client = hangups.Client(cookies)
