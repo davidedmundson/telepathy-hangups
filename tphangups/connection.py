@@ -1,8 +1,13 @@
 import telepathy
+import dbus
+
+from .text_channel import HangupsTextChannel
 
 class HangupsConnection(telepathy.server.Connection,
         telepathy.server.ConnectionInterfaceRequests,
-        telepathy.server.ConnectionInterfaceSimplePresence): #all other Ifaces here too
+        telepathy.server.ConnectionInterfaceSimplePresence,
+        telepathy.server.ConnectionInterfaceContacts,
+        telepathy.server.ConnectionInterfaceContactList): #all other Ifaces here too #fixme, ideally i want a contact manager like the channel manager in tp-python
 
     def __init__(self, protocol, manager, parameters):
         print ("Making Connection")
@@ -17,6 +22,16 @@ class HangupsConnection(telepathy.server.Connection,
 
         handle = self.create_handle(telepathy.HANDLE_TYPE_CONTACT, "self")
         self.set_self_handle(handle)
+
+
+        self._implement_property_get(
+        telepathy.CONNECTION_INTERFACE_CONTACT_LIST, {
+            'ContactListState' : telepathy.constants.CONTACT_LIST_STATE_SUCCESS,
+            'ContactListPersists' : False,
+            'CanChangeContactList' : False,
+            'RequestUsesMessage' : False,
+            'DownloadAtConnection' : True
+        })
 
         self._channel_manager = HangupsChannelManager(self, protocol)
 
@@ -37,7 +52,6 @@ class HangupsConnection(telepathy.server.Connection,
                 }
 
             self._channel_manager.channel_for_props(props, signal=True)
-
 
     def Disconnect(self):
         self.__disconnect_reason = telepathy.CONNECTION_STATUS_REASON_REQUESTED
@@ -62,6 +76,21 @@ class HangupsConnection(telepathy.server.Connection,
                 personal_message), signature='uss')
         return presences
 
+
+    #from Contacts
+    def getContactAttributes(self, Interfaces, Hold):
+        return getContactAttributes(Interfaces, Hold)
+
+    # from ContactList
+    def GetContactListAttributes(self, Interfaces, Hold):
+        return getContactAttributes(Interfaces, Hold)
+
+    def getContactAttributes(self, interfaces, hold):
+        print ("GETTING CONTACT STUFF")
+
+
+
+
 class HangupsChannelManager(telepathy.server.ChannelManager):
     def __init__(self, connection, protocol):
         self._connection = connection
@@ -72,4 +101,6 @@ class HangupsChannelManager(telepathy.server.ChannelManager):
 
     def _get_text_channel(self, props):
         print ("Making new text channel")
-        return HangupsTextChannel(self._connection, self._manager, props)
+        return HangupsTextChannel(self._connection, self._protocol, props)
+
+

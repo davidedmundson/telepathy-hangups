@@ -27,7 +27,7 @@ Plan of attack:
 Task 0.1:
 (Tp side)
  - create a CM that can be seen in KTp DONE
- - send/receive a hello world
+ - send/receive a hello world DONE
  - show a hardcoded roster
 
 (Hangups side)

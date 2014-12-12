@@ -1,4 +1,8 @@
 import telepathy
+import dbus
+
+#this implements ChannelTypeText which is almost all entirely deprecated
+#we should update channel.py to implement InterfaceMessages copying and pasting code from Butterfly
 
 class HangupsTextChannel(telepathy.server.ChannelTypeText,
         telepathy.server.ChannelInterfaceChatState):
@@ -8,15 +12,21 @@ class HangupsTextChannel(telepathy.server.ChannelTypeText,
         telepathy.server.ChannelTypeText.__init__(self, conn, manager, props,
                     object_path=object_path)
 
-        self._implement_property_get(CHANNEL_INTERFACE_MESSAGES, {
+        self._implement_property_get(telepathy.CHANNEL_INTERFACE_MESSAGES, {
             'SupportedContentTypes': lambda: ["text/plain"] ,
             'MessagePartSupportFlags': lambda: 0,
             'DeliveryReportingSupport': lambda: telepathy.DELIVERY_REPORTING_SUPPORT_FLAG_RECEIVE_FAILURES,
-            'PendingMessages': lambda: dbus.Array(self._pending_messages2.values(), signature='aa{sv}')
+            'PendingMessages': lambda: dbus.Array(self._pending_messages.values(), signature='aa{sv}')
             })
 
         self._add_immutables({
-            'SupportedContentTypes': CHANNEL_INTERFACE_MESSAGES,
-            'MessagePartSupportFlags': CHANNEL_INTERFACE_MESSAGES,
-            'DeliveryReportingSupport': CHANNEL_INTERFACE_MESSAGES,
+            'SupportedContentTypes': telepathy.CHANNEL_INTERFACE_MESSAGES,
+            'MessagePartSupportFlags': telepathy.CHANNEL_INTERFACE_MESSAGES,
+            'DeliveryReportingSupport': telepathy.CHANNEL_INTERFACE_MESSAGES,
             })
+
+    @dbus.service.method(telepathy.CHANNEL_TYPE_TEXT, in_signature='us', out_signature='',
+                         async_callbacks=('_success', '_error'))
+    def Send(self, message_type, text, _success, _error):
+        print ("NEW MESSAGE " + text)
+        self.Received(15, 34234234, 2, 0 , 0, "Hello!")
