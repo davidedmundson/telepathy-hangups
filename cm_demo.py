@@ -33,10 +33,10 @@ class HangupsProtocol(telepathy.server.Protocol,
         ]
 
     _statuses = {
-            "A":(
+            "online":(
                 telepathy.CONNECTION_PRESENCE_TYPE_AVAILABLE,
                 True, True),
-            "B":(
+            "offline":(
                 telepathy.CONNECTION_PRESENCE_TYPE_OFFLINE,
                 True, False)
             }
@@ -62,26 +62,44 @@ class HangupsProtocol(telepathy.server.Protocol,
 
 
 class HangupsConnection(telepathy.server.Connection,
-        telepathy.server.ConnectionInterfaceRequests): #all other Ifaces here too
+        telepathy.server.ConnectionInterfaceRequests,
+        telepathy.server.ConnectionInterfaceSimplePresence): #all other Ifaces here too
 
     def __init__(self, protocol, manager, parameters):
         print ("Making Connection")
         protocol.check_parameters(parameters)
-        account = unicode(parameters['account'])
+        account = str("DAVE")
+        #parameters['account']
 
         telepathy.server.Connection.__init__(self, 'hangouts', account,
                 'hangups', protocol)
         telepathy.server.ConnectionInterfaceRequests.__init__(self)
+        telepathy.server.ConnectionInterfaceSimplePresence.__init__(self)
 
+        self._channel_manager = HangupsChannelManager(self, protocol)
 
-        #lets maek a channel?
-        #c = HangupsTextChannel(self, )
+        #making a text channel
+        props = props = {
+            telepathy.CHANNEL_INTERFACE + '.ChannelType': telepathy.CHANNEL_TYPE_TEXT,
+            telepathy.CHANNEL_INTERFACE + '.TargetHandle': 0,
+            telepathy.CHANNEL_INTERFACE + '.TargetHandleType': telepathy.HANDLE_TYPE_CONTACT,
+            telepathy.CHANNEL_INTERFACE + '.Requested': True
+            }
+
+        #self._channel_manager.channel_for_props(props, signal=True, call=True)
+
 
     def Connect(self):
-        print ("asked to connect")
+        if self._status == telepathy.CONNECTION_STATUS_DISCONNECTED:
+            #FIXME set to connecting..then actually connect
+            self.StatusChanged(telepathy.CONNECTION_STATUS_CONNECTED, telepathy.CONNECTION_STATUS_REASON_REQUESTED)
+            print ("connect")
 
     def Disconnect(self):
-        print ("asked to disconnect")
+        self.__disconnect_reason = telepathy.CONNECTION_STATUS_REASON_REQUESTED
+        print ("disconnect request")
+        #FIXME
+
 
 class HangupsChannelManager(telepathy.server.ChannelManager):
     def __init__(self, connection, protocol):
@@ -90,8 +108,7 @@ class HangupsChannelManager(telepathy.server.ChannelManager):
         self.implement_channel_classes(telepathy.CHANNEL_TYPE_TEXT, self._get_text_channel)
 
     def _get_text_channel(self, props):
-        print "Making new text channel"
-
+        print ("Making new text channel")
 
 
 class HangupsTextChannel(telepathy.server.ChannelTypeText,
