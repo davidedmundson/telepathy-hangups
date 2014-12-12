@@ -76,6 +76,9 @@ class HangupsConnection(telepathy.server.Connection,
         telepathy.server.ConnectionInterfaceRequests.__init__(self)
         telepathy.server.ConnectionInterfaceSimplePresence.__init__(self)
 
+        handle = self.create_handle(telepathy.HANDLE_TYPE_CONTACT, "self")
+        self.set_self_handle(handle)
+
         self._channel_manager = HangupsChannelManager(self, protocol)
 
         #making a text channel
@@ -99,6 +102,21 @@ class HangupsConnection(telepathy.server.Connection,
         self.__disconnect_reason = telepathy.CONNECTION_STATUS_REASON_REQUESTED
         print ("disconnect request")
         #FIXME
+
+
+    #from SimplePresence
+    def GetPresences(self, contacts):
+        presences = dbus.Dictionary(signature='u(uss)')
+        for handle_id in contacts:
+            handle = self.handle(telepathy.HANDLE_TYPE_CONTACT, handle_id)
+            contact = handle.contact
+
+            presence_type = telepathy.constants.CONNECTION_PRESENCE_TYPE_AVAILABLE
+            presence = "online"
+            personal_message = ""
+            presences[handle] = dbus.Struct((presence_type, presence,
+                personal_message), signature='uss')
+        return presences
 
 
 class HangupsChannelManager(telepathy.server.ChannelManager):
