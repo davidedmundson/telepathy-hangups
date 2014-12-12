@@ -81,15 +81,8 @@ class HangupsConnection(telepathy.server.Connection,
 
         self._channel_manager = HangupsChannelManager(self, protocol)
 
-        #making a text channel
-        props = props = {
-            telepathy.CHANNEL_INTERFACE + '.ChannelType': telepathy.CHANNEL_TYPE_TEXT,
-            telepathy.CHANNEL_INTERFACE + '.TargetHandle': 0,
-            telepathy.CHANNEL_INTERFACE + '.TargetHandleType': telepathy.HANDLE_TYPE_CONTACT,
-            telepathy.CHANNEL_INTERFACE + '.Requested': True
-            }
 
-        #self._channel_manager.channel_for_props(props, signal=True, call=True)
+
 
 
     def Connect(self):
@@ -97,6 +90,18 @@ class HangupsConnection(telepathy.server.Connection,
             #FIXME set to connecting..then actually connect
             self.StatusChanged(telepathy.CONNECTION_STATUS_CONNECTED, telepathy.CONNECTION_STATUS_REASON_REQUESTED)
             print ("connect")
+
+            handle = self.create_handle(telepathy.HANDLE_TYPE_CONTACT, "monkeyface")
+            #making a text channel
+            #props = props = {
+                #telepathy.CHANNEL_INTERFACE + '.ChannelType': telepathy.CHANNEL_TYPE_TEXT,
+                #telepathy.CHANNEL_INTERFACE + '.TargetHandle': handle.id,
+                #telepathy.CHANNEL_INTERFACE + '.TargetHandleType': telepathy.HANDLE_TYPE_CONTACT,
+                #telepathy.CHANNEL_INTERFACE + '.Requested': True
+                #}
+
+            #self._channel_manager.channel_for_props(props, signal=True)
+
 
     def Disconnect(self):
         self.__disconnect_reason = telepathy.CONNECTION_STATUS_REASON_REQUESTED
