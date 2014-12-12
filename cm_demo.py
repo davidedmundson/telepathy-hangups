@@ -103,13 +103,16 @@ class HangupsConnection(telepathy.server.Connection,
         print ("disconnect request")
         #FIXME
 
+    def handle(self, handle_type, handle_id):
+        self.check_handle(handle_type, handle_id)
+        return self._handles[handle_type, handle_id]
 
     #from SimplePresence
     def GetPresences(self, contacts):
         presences = dbus.Dictionary(signature='u(uss)')
         for handle_id in contacts:
             handle = self.handle(telepathy.HANDLE_TYPE_CONTACT, handle_id)
-            contact = handle.contact
+            contact = handle.name
 
             presence_type = telepathy.constants.CONNECTION_PRESENCE_TYPE_AVAILABLE
             presence = "online"
