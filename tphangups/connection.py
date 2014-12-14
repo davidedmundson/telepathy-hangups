@@ -7,7 +7,8 @@ class HangupsConnection(telepathy.server.Connection,
         telepathy.server.ConnectionInterfaceRequests,
         telepathy.server.ConnectionInterfaceSimplePresence,
         telepathy.server.ConnectionInterfaceContacts,
-        telepathy.server.ConnectionInterfaceContactList): #all other Ifaces here too #fixme, ideally i want a contact manager like the channel manager in tp-python
+        telepathy.server.ConnectionInterfaceContactList,
+        telepathy.server.ConnectionInterfaceAliasing):
 
     def __init__(self, protocol, manager, parameters):
         print ("Making Connection")
@@ -36,7 +37,7 @@ class HangupsConnection(telepathy.server.Connection,
 
         self._implement_property_get(
         telepathy.CONNECTION_INTERFACE_CONTACTS, {
-            'ContactAttributeInterfaces' : lambda: [telepathy.CONNECTION_INTERFACE_SIMPLE_PRESENCE],
+            'ContactAttributeInterfaces' : lambda: [telepathy.CONNECTION_INTERFACE_SIMPLE_PRESENCE, telepathy.CONNECTION_INTERFACE_ALIASING],
         })
 
         self._implement_property_get(
@@ -86,13 +87,13 @@ class HangupsConnection(telepathy.server.Connection,
     attributes = {
         telepathy.CONNECTION : 'contact-id',
         telepathy.CONNECTION_INTERFACE_SIMPLE_PRESENCE : 'presence',
-        #telepathy.CONNECTION_INTERFACE_ALIASING : 'alias',
+        telepathy.CONNECTION_INTERFACE_ALIASING : 'alias',
         #telepathy.CONNECTION_INTERFACE_AVATARS : 'token',
         #telepathy.CONNECTION_INTERFACE_CAPABILITIES : 'caps',
         #telepathy.CONNECTION_INTERFACE_CONTACT_CAPABILITIES : 'capabilities'
         }
 
-    #from Contacts
+    #from Contacts - this crap should be in telepathy-python somewhere
     def GetContactAttributes(self, handles, interfaces, hold):
         supported_interfaces = set()
         supported_interfaces.add(telepathy.CONNECTION)
@@ -127,7 +128,6 @@ class HangupsConnection(telepathy.server.Connection,
                 ret[int(handle)][interface_attribute] = value
         return ret
 
-
     # from ContactList
     def GetContactListAttributes(self, interfaces, hold):
         all_handles = []
@@ -135,6 +135,20 @@ class HangupsConnection(telepathy.server.Connection,
             if handle_type == telepathy.HANDLE_TYPE_CONTACT:
                 all_handles.append(handle)
         return self.GetContactAttributes(all_handles, interfaces, hold)
+
+
+    # from Aliasing
+    def GetAliasFlags(self):
+        return 0
+
+    def GetAliases(self, handles):
+        ret = dbus.Dictionary(signature='us')
+        for handle in handles:
+            if handle == 1:
+                ret[handle] = "ME"
+            else:
+                ret[handle] = "This other dude"
+        return ret
 
 class HangupsChannelManager(telepathy.server.ChannelManager):
     def __init__(self, connection, protocol):
