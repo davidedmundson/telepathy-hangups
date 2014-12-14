@@ -19,18 +19,28 @@ class HangupsConnection(telepathy.server.Connection,
                 'hangups', protocol)
         telepathy.server.ConnectionInterfaceRequests.__init__(self)
         telepathy.server.ConnectionInterfaceSimplePresence.__init__(self)
+        telepathy.server.ConnectionInterfaceContacts.__init__(self)
+        telepathy.server.ConnectionInterfaceContactList.__init__(self)
+
 
         handle = self.create_handle(telepathy.HANDLE_TYPE_CONTACT, "self")
+        self.other_dude = self.create_handle(telepathy.HANDLE_TYPE_CONTACT, "otherdude")
+
         self.set_self_handle(handle)
 
+        #from simple presence
+        self._implement_property_get(
+            telepathy.CONNECTION_INTERFACE_SIMPLE_PRESENCE, {
+                'Statuses' : lambda: self._protocol.statuses
+            })
 
         self._implement_property_get(
         telepathy.CONNECTION_INTERFACE_CONTACT_LIST, {
-            'ContactListState' : telepathy.constants.CONTACT_LIST_STATE_SUCCESS,
-            'ContactListPersists' : False,
-            'CanChangeContactList' : False,
-            'RequestUsesMessage' : False,
-            'DownloadAtConnection' : True
+            'ContactListState' : lambda: telepathy.constants.CONTACT_LIST_STATE_SUCCESS,
+            'ContactListPersists' : lambda: False,
+            'CanChangeContactList' : lambda: False,
+            'RequestUsesMessage' : lambda: False,
+            'DownloadAtConnection' : lambda: True
         })
 
         self._channel_manager = HangupsChannelManager(self, protocol)
@@ -40,18 +50,6 @@ class HangupsConnection(telepathy.server.Connection,
             #FIXME set to connecting..then actually connect
             self.StatusChanged(telepathy.CONNECTION_STATUS_CONNECTED, telepathy.CONNECTION_STATUS_REASON_REQUESTED)
             print ("connect")
-
-            handle = self.create_handle(telepathy.HANDLE_TYPE_CONTACT, "monkeyface")
-
-            #making a text channel
-            props = props = {
-                telepathy.CHANNEL_INTERFACE + '.ChannelType': telepathy.CHANNEL_TYPE_TEXT,
-                telepathy.CHANNEL_INTERFACE + '.TargetHandle': handle.id,
-                telepathy.CHANNEL_INTERFACE + '.TargetHandleType': telepathy.HANDLE_TYPE_CONTACT,
-                telepathy.CHANNEL_INTERFACE + '.Requested': True
-                }
-
-            self._channel_manager.channel_for_props(props, signal=True)
 
     def Disconnect(self):
         self.__disconnect_reason = telepathy.CONNECTION_STATUS_REASON_REQUESTED
@@ -76,20 +74,62 @@ class HangupsConnection(telepathy.server.Connection,
                 personal_message), signature='uss')
         return presences
 
+    def SetPresence(self, status, message):
+        #pretend to do stuff :)
+        pass
+
+    attributes = {
+        telepathy.CONNECTION : 'contact-id',
+        #telepathy.CONNECTION_INTERFACE_SIMPLE_PRESENCE : 'presence',
+        #telepathy.CONNECTION_INTERFACE_ALIASING : 'alias',
+        #telepathy.CONNECTION_INTERFACE_AVATARS : 'token',
+        #telepathy.CONNECTION_INTERFACE_CAPABILITIES : 'caps',
+        #telepathy.CONNECTION_INTERFACE_CONTACT_CAPABILITIES : 'capabilities'
+        }
 
     #from Contacts
-    def getContactAttributes(self, Interfaces, Hold):
-        return getContactAttributes(Interfaces, Hold)
+    def GetContactAttributes(self, handles, interfaces, hold):
+        supported_interfaces = set()
+        supported_interfaces.add(telepathy.CONNECTION)
+        for interface in interfaces:
+            if interface in self.attributes:
+                supported_interfaces.add(interface)
+
+        handle_type = telepathy.HANDLE_TYPE_CONTACT
+        ret = dbus.Dictionary(signature='ua{sv}')
+        for handle in handles:
+            ret[handle] = dbus.Dictionary(signature='sv')
+
+        functions = {
+            telepathy.CONNECTION :
+                lambda x: zip(x, self.InspectHandles(handle_type, x)),
+            telepathy.CONNECTION_INTERFACE_SIMPLE_PRESENCE :
+                lambda x: self.GetPresences(x).items(),
+            telepathy.CONNECTION_INTERFACE_ALIASING :
+                lambda x: self.GetAliases(x).items(),
+            telepathy.CONNECTION_INTERFACE_AVATARS :
+                lambda x: self.GetKnownAvatarTokens(x).items(),
+            telepathy.CONNECTION_INTERFACE_CAPABILITIES :
+                lambda x: self.GetCapabilities(x).items(),
+            telepathy.CONNECTION_INTERFACE_CONTACT_CAPABILITIES :
+                lambda x: self.GetContactCapabilities(x).items()
+            }
+
+        for interface in supported_interfaces:
+            interface_attribute = interface + '/' + self.attributes[interface]
+            results = functions[interface](handles)
+            for handle, value in results:
+                ret[int(handle)][interface_attribute] = value
+        return ret
+
 
     # from ContactList
-    def GetContactListAttributes(self, Interfaces, Hold):
-        return getContactAttributes(Interfaces, Hold)
-
-    def getContactAttributes(self, interfaces, hold):
-        print ("GETTING CONTACT STUFF")
-
-
-
+    def GetContactListAttributes(self, interfaces, hold):
+        all_handles = []
+        for (handle_type, handle) in self._handles.keys():
+            if handle_type == telepathy.HANDLE_TYPE_CONTACT:
+                all_handles.append(handle)
+        return self.GetContactAttributes(all_handles, interfaces, hold)
 
 class HangupsChannelManager(telepathy.server.ChannelManager):
     def __init__(self, connection, protocol):
