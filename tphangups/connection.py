@@ -5,6 +5,8 @@ import hangups
 import asyncio #maybe want to use gobject event loop? depends on python+dbus
 
 from .text_channel import HangupsTextChannel
+from os.path import expanduser
+
 
 class HangupsConnection(telepathy.server.Connection,
         telepathy.server.ConnectionInterfaceRequests,
@@ -13,7 +15,11 @@ class HangupsConnection(telepathy.server.Connection,
         telepathy.server.ConnectionInterfaceContactList,
         telepathy.server.ConnectionInterfaceAliasing):
 
-    client = None
+    _client = None
+    _user_list = None
+    _conversation_list = None
+
+    _user_map = {}
 
     def __init__(self, protocol, manager, parameters):
         print ("Making Connection")
@@ -59,12 +65,10 @@ class HangupsConnection(telepathy.server.Connection,
     def Connect(self):
         if self._status == telepathy.CONNECTION_STATUS_DISCONNECTED:
             self.StatusChanged(telepathy.CONNECTION_STATUS_CONNECTING, telepathy.CONNECTION_STATUS_REASON_REQUESTED)
-            print ("connecting")
-            cookies = hangups.auth.get_auth_stdin(expanduser("~/hangups_auth_tmp"))
-            self.client = hangups.Client(cookies)
-            self.client.on_connect.add_observer(_on_connect)
-            self.client.connect()
-
+            cookies = hangups.auth.get_auth(None, None, expanduser("~/hangups_auth_tmp"))
+            self._client = hangups.Client(cookies)
+            self._client.on_connect.add_observer(self._on_connect)
+            asyncio.async(self._client.connect())
 
     def Disconnect(self):
         self.__disconnect_reason = telepathy.CONNECTION_STATUS_REASON_REQUESTED
@@ -73,8 +77,21 @@ class HangupsConnection(telepathy.server.Connection,
 
     def _on_connect(self, initial_data):
         print("CONNECTED!!!!!!")
-        self.StatusChanged(telepathy.CONNECTION_STATUS_CONNECTED, telepathy.CONNECTION_STATUS_REASON_REQUESTED)
+        self._user_list = hangups.UserList(
+            self._client, initial_data.self_entity, initial_data.entities,
+            initial_data.conversation_participants
+        )
 
+        for i in self._user_list._user_dict:
+            user = self._user_list._user_dict[i]
+            handle = self.create_handle(telepathy.HANDLE_TYPE_CONTACT, user.id_)
+            self._user_map[user.id_] = handle
+
+        self._conversation_list = hangups.ConversationList(
+            self._client, initial_data.conversation_states, self._user_list,
+            initial_data.sync_timestamp)
+
+        self.StatusChanged(telepathy.CONNECTION_STATUS_CONNECTED, telepathy.CONNECTION_STATUS_REASON_REQUESTED)
 
     def handle(self, handle_type, handle_id):
         self.check_handle(handle_type, handle_id)
@@ -156,12 +173,12 @@ class HangupsConnection(telepathy.server.Connection,
         return 0
 
     def GetAliases(self, handles):
+        self.check_connected()
         ret = dbus.Dictionary(signature='us')
-        for handle in handles:
-            if handle == 1:
-                ret[handle] = "ME"
-            else:
-                ret[handle] = "This other dude"
+        for handle_id in handles:
+            handle = self.handle(telepathy.HANDLE_TYPE_CONTACT, handle_id)
+            user = self._user_list.get_user(handle.name)
+            ret[handle_id] = user.full_name
         return ret
 
 class HangupsChannelManager(telepathy.server.ChannelManager):
