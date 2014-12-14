@@ -24,7 +24,7 @@ Plan of attack:
  - mainloop problem can be solved with https://bitbucket.org/a_ba/gbulb
  see  also http://stackoverflow.com/questions/26675297/asyncio-calls-running-in-gtk-main-loop
 
-Task 0.1:
+Milestone 0.1:
 (Tp side)
  - create a CM that can be seen in KTp DONE
  - send/receive a hello world DONE
@@ -36,12 +36,12 @@ Task 0.1:
 
 
 Milestone 0.2:
-- connect Using get_auth_stdin + saved cookie file
+- connect Using get_auth_stdin + saved cookie file DONE
+ - roster, even if using old API as long as it works in KTp DONE
  - have 1-1 chats working with name in the chat
 
 Milestone 0.3:
  - group chat receive
- - roster, even if using old API as long as it works in KTp
 
 *BLOG*
 
@@ -50,10 +50,13 @@ Milestone 0.4:
  - set_presence
  - avatars
  - contact caps (hardcode that they can have text channels)
+ - email the hangups guys
 
 Milestone 0.5:
  - proper auth
  - error handling
 
+Milestone 0.6:
+ - all the packaging nonsense. Licenses, COPYING files etc.
 
 *RELEASE*
