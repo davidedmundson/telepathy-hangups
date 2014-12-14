@@ -46,8 +46,14 @@ Milestone 0.3:
 *BLOG*
 
 Milestone 0.4:
- - proper auth
  - proper install  + DBus activate
  - set_presence
+ - avatars
+ - contact caps (hardcode that they can have text channels)
+
+Milestone 0.5:
+ - proper auth
+ - error handling
+
 
 *RELEASE*
