@@ -36,7 +36,6 @@ class HangupsConnection(telepathy.server.Connection,
 
 
         handle = self.create_handle(telepathy.HANDLE_TYPE_CONTACT, "self")
-        self.other_dude = self.create_handle(telepathy.HANDLE_TYPE_CONTACT, "otherdude")
 
         self.set_self_handle(handle)
 
