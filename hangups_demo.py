@@ -32,7 +32,7 @@ def _on_connect(initial_data):
         print ("ROSTER: " + user_list._user_dict[x].full_name)
 
     for conv in conversation_list.get_all():
-        print ("active conv", conv.name)
+        print ("active conv", conv.name, conv.users)
         conv.on_event.add_observer(on_conversation_event)
 
 def on_conversation_list_event(conv_event):
@@ -48,13 +48,7 @@ client = hangups.Client(cookies)
 client.on_connect.add_observer(_on_connect)
 
 print ("about to start main loop")
-client.connect()
 
-
-asyncio.set_event_loop_policy(gbulb.GLibEventLoopPolicy())
-
-mainloop = GObject.MainLoop()
-mainloop.run()
-
-#loop = asyncio.get_event_loop()
-#loop.run_forever()
+loop = asyncio.get_event_loop()
+loop.run_until_complete(client.connect()
+)
