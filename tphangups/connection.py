@@ -35,6 +35,11 @@ class HangupsConnection(telepathy.server.Connection,
             })
 
         self._implement_property_get(
+        telepathy.CONNECTION_INTERFACE_CONTACTS, {
+            'ContactAttributeInterfaces' : lambda: [telepathy.CONNECTION_INTERFACE_SIMPLE_PRESENCE],
+        })
+
+        self._implement_property_get(
         telepathy.CONNECTION_INTERFACE_CONTACT_LIST, {
             'ContactListState' : lambda: telepathy.constants.CONTACT_LIST_STATE_SUCCESS,
             'ContactListPersists' : lambda: False,
@@ -80,7 +85,7 @@ class HangupsConnection(telepathy.server.Connection,
 
     attributes = {
         telepathy.CONNECTION : 'contact-id',
-        #telepathy.CONNECTION_INTERFACE_SIMPLE_PRESENCE : 'presence',
+        telepathy.CONNECTION_INTERFACE_SIMPLE_PRESENCE : 'presence',
         #telepathy.CONNECTION_INTERFACE_ALIASING : 'alias',
         #telepathy.CONNECTION_INTERFACE_AVATARS : 'token',
         #telepathy.CONNECTION_INTERFACE_CAPABILITIES : 'caps',
