@@ -3,6 +3,10 @@ import hangups
 import asyncio #maybe want to use gobject event loop? depends on python+dbus
 from os.path import expanduser
 
+from gi.repository import GObject
+#from gbulb import glib_events
+import gbulb
+
 
 user_list = None
 conversation_list = None
@@ -45,5 +49,12 @@ client.on_connect.add_observer(_on_connect)
 
 print ("about to start main loop")
 client.connect()
-loop = asyncio.get_event_loop()
-loop.run_until_complete(client.connect())
+
+
+asyncio.set_event_loop_policy(gbulb.GLibEventLoopPolicy())
+
+mainloop = GObject.MainLoop()
+mainloop.run()
+
+#loop = asyncio.get_event_loop()
+#loop.run_forever()

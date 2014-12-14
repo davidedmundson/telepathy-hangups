@@ -28,7 +28,7 @@ Task 0.1:
 (Tp side)
  - create a CM that can be seen in KTp DONE
  - send/receive a hello world DONE
- - show a hardcoded roster
+ - show a hardcoded roster DONE
 
 (Hangups side)
  - create a client object, log in,   DONE
@@ -36,7 +36,7 @@ Task 0.1:
 
 
 Milestone 0.2:
- - Using get_auth_stdin + saved cookie file
+- connect Using get_auth_stdin + saved cookie file
  - have 1-1 chats working with name in the chat
 
 Milestone 0.3:

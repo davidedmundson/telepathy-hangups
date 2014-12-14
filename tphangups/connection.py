@@ -1,6 +1,9 @@
 import telepathy
 import dbus
 
+import hangups
+import asyncio #maybe want to use gobject event loop? depends on python+dbus
+
 from .text_channel import HangupsTextChannel
 
 class HangupsConnection(telepathy.server.Connection,
@@ -9,6 +12,8 @@ class HangupsConnection(telepathy.server.Connection,
         telepathy.server.ConnectionInterfaceContacts,
         telepathy.server.ConnectionInterfaceContactList,
         telepathy.server.ConnectionInterfaceAliasing):
+
+    client = None
 
     def __init__(self, protocol, manager, parameters):
         print ("Making Connection")
@@ -53,14 +58,23 @@ class HangupsConnection(telepathy.server.Connection,
 
     def Connect(self):
         if self._status == telepathy.CONNECTION_STATUS_DISCONNECTED:
-            #FIXME set to connecting..then actually connect
-            self.StatusChanged(telepathy.CONNECTION_STATUS_CONNECTED, telepathy.CONNECTION_STATUS_REASON_REQUESTED)
-            print ("connect")
+            self.StatusChanged(telepathy.CONNECTION_STATUS_CONNECTING, telepathy.CONNECTION_STATUS_REASON_REQUESTED)
+            print ("connecting")
+            cookies = hangups.auth.get_auth_stdin(expanduser("~/hangups_auth_tmp"))
+            self.client = hangups.Client(cookies)
+            self.client.on_connect.add_observer(_on_connect)
+            self.client.connect()
+
 
     def Disconnect(self):
         self.__disconnect_reason = telepathy.CONNECTION_STATUS_REASON_REQUESTED
         print ("disconnect request")
-        #FIXME
+        self.client = None
+
+    def _on_connect(self, initial_data):
+        print("CONNECTED!!!!!!")
+        self.StatusChanged(telepathy.CONNECTION_STATUS_CONNECTED, telepathy.CONNECTION_STATUS_REASON_REQUESTED)
+
 
     def handle(self, handle_type, handle_id):
         self.check_handle(handle_type, handle_id)
