@@ -62,9 +62,10 @@ class HangupsConnection(telepathy.server.Connection,
         self._channel_manager = HangupsChannelManager(self, protocol)
 
     def Connect(self):
+        print ("doing connect")
         if self._status == telepathy.CONNECTION_STATUS_DISCONNECTED:
             self.StatusChanged(telepathy.CONNECTION_STATUS_CONNECTING, telepathy.CONNECTION_STATUS_REASON_REQUESTED)
-            cookies = hangups.auth.get_auth(None, None, expanduser("~/hangups_auth_tmp"))
+            cookies = hangups.auth.get_auth(None, None, expanduser("~/.hangups_auth_tmp"))
             self._client = hangups.Client(cookies)
             self._client.on_connect.add_observer(self._on_connect)
             asyncio.async(self._client.connect())
