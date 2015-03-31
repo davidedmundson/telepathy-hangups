@@ -218,7 +218,7 @@ class BaseGLibEventLoop(unix_events.SelectorEventLoop):
         else:
             self._context = glib_context if glib_context else GLib.MainContext()
 
-
+        self._closed = False
         self._readers = {}
         self._writers = {}
         self._sighandlers = {}
